@@ -120,8 +120,26 @@
     width: 100%; font: inherit; color: var(--ink); padding: 0.75rem 0.85rem;
     border: 1.5px solid #9db7b5; border-radius: 8px; background: #fff;
   }
+  input[type="text"], input[type="tel"], input[type="email"], input[type="date"], select, textarea {
+    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+  }
+  input[type="text"]::placeholder, input[type="tel"]::placeholder, textarea::placeholder { color: #8aa0a6; }
+  input[type="text"]:hover, input[type="tel"]:hover, input[type="email"]:hover, input[type="date"]:hover,
+  select:hover:not(:disabled), textarea:hover { border-color: var(--teal); background: #f6fbfa; }
+  input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input[type="date"]:focus,
+  select:focus, textarea:focus { outline: none; border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(27, 127, 134, 0.18); }
+  select { cursor: pointer; }
+  select:disabled { background: #f1f5f5; color: var(--muted); cursor: not-allowed; }
+  input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
   textarea { min-height: 84px; resize: vertical; }
   input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--error); }
+  input[aria-invalid="true"]:focus, select[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px rgba(166, 58, 43, 0.18); }
+  .tab { transition: background 0.15s, color 0.15s; }
+  .tab:hover:not([aria-selected="true"]) { background: var(--mint); color: var(--teal-dark); }
+  .tab[aria-selected="true"]:hover { background: var(--teal-dark); }
+  .form-card .btn--gold { box-shadow: 0 4px 12px rgba(217, 164, 65, 0.35); transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .form-card .btn--gold:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(217, 164, 65, 0.5); }
+  .form-card .btn--gold:active { transform: translateY(0); }
   .two { display: grid; gap: 0.9rem; }
   @media (min-width: 480px) { .two { grid-template-columns: 1fr 1fr; } }
   .error { color: var(--error); font-size: 0.88rem; min-height: 1.1em; margin-top: 0.2rem; }
