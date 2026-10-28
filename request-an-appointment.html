@@ -8,7 +8,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Request an Appointment | Homeo Heal">
 <meta property="og:description" content="Book a homeopathic consultation in Rawalpindi or online, or request a call back. Choose a day and time and we will confirm by message.">
-<meta property="og:image" content="assets/images/hero-doctor.jpg">
+<meta property="og:image" content="assets/images/remedies-bottles.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%233A5C66'/%3E%3Cpath d='M20 33C11 26 9 16 20 7c11 9 9 19 0 26Z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,18 +137,27 @@
           </label>
 
           <button class="btn btn--gold submit" type="submit" id="submit-btn"><span class="label">Request appointment</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="spin" aria-hidden="true"></span></button>
+          <p class="send-error" id="form-error" role="alert" hidden>Sorry, we couldn’t send your request just now. Please check your connection and try again, or call us on 0300-9813872.</p>
           <p class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Your information is confidential. We’ll only use it to confirm your appointment. Please don’t share detailed medical history here. The doctor will ask at your visit.</span></p>
         </form>
 
         <div id="confirm" hidden tabindex="-1">
           <div class="ok-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-width="3"/></svg></div>
-          <h2>Your request is ready to send</h2>
-          <p class="sub-note">Send it to the clinic with one of the buttons below. Your appointment is confirmed once we reply.</p>
+          <h2>Please review your request</h2>
+          <p class="sub-note">Check your details, then press Submit to send them to the clinic. We will confirm your appointment by call or message.</p>
           <ul class="summary" id="summary"></ul>
+          <p class="send-error" id="send-error" role="alert" hidden>Sorry, we couldn’t send your request just now. Please check your connection and press Submit again, or call us on 0300-9813872.</p>
           <div class="confirm-actions">
-            <a class="btn" id="send-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button class="btn submit" type="button" id="submit-final"><span class="label">Submit</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="spin" aria-hidden="true"></span></button>
             <button class="btn btn--outline" type="button" id="edit-btn">Change details</button>
           </div>
+        </div>
+
+        <div id="success" hidden tabindex="-1">
+          <div class="ok-ico big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-width="3"/></svg></div>
+          <h2 id="success-title">Thank you!</h2>
+          <p class="sub-note">Your request has been received. Our team will confirm your appointment by phone or WhatsApp shortly.</p>
+          <p class="success-count" id="success-count" aria-live="polite"></p>
         </div>
       </div>
 

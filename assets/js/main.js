@@ -3,7 +3,10 @@
 /* ---------- Edit these for your clinic ---------- */
 const CLINIC = {
   name: "Homeo Heal",
-  whatsapp: "923009813872",            // country code + number, digits only
+  // Requests are emailed to the clinic through FormSubmit (https://formsubmit.co). The endpoint below
+  // uses FormSubmit's private alias, which forwards to the clinic inbox without exposing the address.
+  notifyEndpoint: "https://formsubmit.co/ajax/92d1ecd063deda6ce57d0b83a5acca9d",
+  resetAfterSeconds: 6,
   // 0 = Sunday. Each entry is [start, end) in 24h time, booked in 30-minute slots.
   hours: {
     0: [],
@@ -202,7 +205,7 @@ function enhanceDate(input, isClosed) {
   document.addEventListener("select-open", (e) => { if (e.detail !== wrap) close(); });
   new MutationObserver(sync).observe(input, { attributes: true, attributeFilter: ["aria-invalid"] });
   sync();
-  return { open: () => open(false) };
+  return { open: () => open(false), sync };
 }
 
 /* ---------- Custom dropdowns (keeps the native <select> in sync) ---------- */
@@ -309,6 +312,7 @@ function enhanceSelect(sel) {
 
   new MutationObserver(build).observe(sel, { childList: true, attributes: true, attributeFilter: ["disabled", "aria-invalid"] });
   build();
+  return { refresh: build };
 }
 
 /* ---------- Booking / call-back form (request-an-appointment page) ---------- */
@@ -324,8 +328,8 @@ function enhanceSelect(sel) {
   const tabs = [...document.querySelectorAll(".tab")];
   let mode = "book";
 
-  enhanceSelect(document.getElementById("visit"));
-  enhanceSelect(timeSelect);
+  const visitCtl = enhanceSelect(document.getElementById("visit"));
+  const timeCtl = enhanceSelect(timeSelect);
   const datePicker = enhanceDate(dateInput, (d) => !(CLINIC.hours[d.getDay()] || []).length);
   /* Clicking the time field before a date is chosen opens the calendar and explains why */
   timeSelect.addEventListener("blocked", () => {
@@ -448,7 +452,7 @@ function enhanceSelect(sel) {
     return true;
   }
 
-  function showSummary() {
+  function collectRows() {
     const rows = [["Request", mode === "book" ? "Appointment" : "Call back"]];
     if (mode === "book") rows.push(["Visit", document.getElementById("visit").value]);
     rows.push(["Name", document.getElementById("name").value.trim()]);
@@ -461,7 +465,11 @@ function enhanceSelect(sel) {
     }
     const msg = document.getElementById("message").value.trim();
     if (msg) rows.push(["Message", msg]);
+    return rows;
+  }
 
+  function showSummary() {
+    const rows = collectRows();
     const list = document.getElementById("summary");
     list.innerHTML = "";
     rows.forEach(([k, v]) => {
@@ -472,9 +480,8 @@ function enhanceSelect(sel) {
       list.appendChild(li);
     });
 
-    const text = `${mode === "book" ? "Appointment request" : "Call back request"} for ${CLINIC.name}\n` +
-      rows.slice(1).map(([k, v]) => `${k}: ${v}`).join("\n");
-    document.getElementById("send-wa").href = `https://wa.me/${CLINIC.whatsapp}?text=${encodeURIComponent(text)}`;
+    lastRows = rows;
+    sendError.hidden = true;
 
     form.hidden = true;
     document.querySelector(".tabs").hidden = true;
@@ -483,10 +490,29 @@ function enhanceSelect(sel) {
     confirmBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    if (submitBtn.classList.contains("loading")) return;
     submitBtn.classList.add("loading");
+    formError.hidden = true;
+
+    if (mode === "callback") {
+      /* a call back needs no review step: send everything now and show the thank-you screen */
+      lastRows = collectRows();
+      try {
+        await sendRequest();
+        form.hidden = true;
+        document.querySelector(".tabs").hidden = true;
+        showSuccess();
+      } catch (err) {
+        formError.hidden = false;
+      } finally {
+        submitBtn.classList.remove("loading");
+      }
+      return;
+    }
+
     setTimeout(() => { submitBtn.classList.remove("loading"); showSummary(); }, 450);
   });
 
@@ -496,6 +522,92 @@ function enhanceSelect(sel) {
     document.querySelector(".tabs").hidden = false;
     form.classList.remove("swap"); void form.offsetWidth; form.classList.add("swap");
     document.getElementById("name").focus();
+  });
+
+  /* ---- Submit: email the request to the clinic, show a thank-you screen, then reset to a blank form ---- */
+  const successBox = document.getElementById("success");
+  const finalBtn = document.getElementById("submit-final");
+  const sendError = document.getElementById("send-error");
+  const formError = document.getElementById("form-error");
+  let lastRows = [];
+  let countdownTimer = null;
+
+  function buildPayload() {
+    const data = {};
+    lastRows.forEach(([k, v]) => { data[k] = v; });
+    data["Submitted (Pakistan time)"] = new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short" });
+    data._subject = `New ${mode === "book" ? "appointment" : "call back"} request: ${data.Name}`;
+    data._template = "table";
+    data._captcha = "false";
+    data._honey = "";
+    return data;
+  }
+
+  async function sendRequest() {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const res = await fetch(CLINIC.notifyEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(buildPayload()),
+        signal: ctrl.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false || data.success === "false") throw new Error(data.message || "Request failed");
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function resetAll() {
+    clearInterval(countdownTimer);
+    form.reset();
+    dateInput.value = "";
+    fillTimes();
+    datePicker.sync();
+    visitCtl.refresh();
+    timeCtl.refresh();
+    successBox.hidden = true;
+    confirmBox.hidden = true;
+    formError.hidden = true;
+    sendError.hidden = true;
+    form.hidden = false;
+    document.querySelector(".tabs").hidden = false;
+    setMode("book", true);
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    document.getElementById("book").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function showSuccess() {
+    const first = (lastRows.find((r) => r[0] === "Name") || ["", ""])[1].split(" ")[0];
+    document.getElementById("success-title").textContent = first ? `Thank you, ${first}!` : "Thank you!";
+    confirmBox.hidden = true;
+    successBox.hidden = false;
+    successBox.focus({ preventScroll: true });
+    successBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    let left = CLINIC.resetAfterSeconds;
+    const note = document.getElementById("success-count");
+    const paint = () => { note.textContent = `A fresh form will load in ${left} second${left === 1 ? "" : "s"}…`; };
+    paint();
+    countdownTimer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) resetAll(); else paint();
+    }, 1000);
+  }
+
+  finalBtn.addEventListener("click", async () => {
+    if (finalBtn.classList.contains("loading")) return;
+    sendError.hidden = true;
+    finalBtn.classList.add("loading");
+    try {
+      await sendRequest();
+      showSuccess();
+    } catch (err) {
+      sendError.hidden = false;
+    } finally {
+      finalBtn.classList.remove("loading");
+    }
   });
 
   setMode(location.hash === "#callback" ? "callback" : "book", false);
