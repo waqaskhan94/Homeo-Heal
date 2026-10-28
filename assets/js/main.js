@@ -482,7 +482,7 @@ function enhanceSelect(sel) {
       page: document.title,
       url: location.origin + location.pathname,
       referrer: cameFrom(),
-      submittedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short" }),
+      submittedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short", hour12: true }).replace(/b(am|pm)b/, (m) => m.toUpperCase()),
       hp: "",
     };
     return rows;
@@ -574,7 +574,7 @@ function enhanceSelect(sel) {
   function buildPayload() {
     const data = {};
     lastRows.forEach(([k, v]) => { data[k] = v; });
-    data["Submitted (Pakistan time)"] = new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short" });
+    data["Submitted (Pakistan time)"] = new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short", hour12: true }).replace(/b(am|pm)b/, (m) => m.toUpperCase());
     data._subject = `New ${mode === "book" ? "appointment" : "call back"} request: ${data.Name}`;
     data._template = "table";
     data._captcha = "false";

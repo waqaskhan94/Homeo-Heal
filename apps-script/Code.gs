@@ -38,6 +38,7 @@ function doPost(e) {
   if (d.hp) return reply({ ok: true });                                   // honeypot: silently ignore bots
 
   d = clean(d);
+  d.submittedAt = nowPkt();                                               // server time, 12-hour clock
   if (d.type !== "appointment" && d.type !== "callback") return reply({ ok: false, error: "Unknown form" });
   if (d.name.length < 2 || d.phone.replace(/\D/g, "").length < 10) return reply({ ok: false, error: "Missing name or phone" });
 
@@ -79,7 +80,16 @@ function saveRow(d) {
   const row = isAppt
     ? [d.submittedAt, d.name, d.phone, d.visit, d.dateText, d.timeText, forWho, d.message, d.referrer, d.page, "New"]
     : [d.submittedAt, d.name, d.phone, forWho, d.message, d.referrer, d.page, "New"];
-  sheet.appendRow(row);
+  /* Mark the new row as plain text BEFORE writing it. Otherwise Sheets reads a phone number that starts
+     with "+" (like +92 300 9813872) as a formula and shows #ERROR!. */
+  const target = sheet.getRange(sheet.getLastRow() + 1, 1, 1, row.length);
+  target.setNumberFormat("@");
+  target.setValues([row]);
+}
+
+/** Current time in Pakistan, 12-hour clock, e.g. "28 Oct 2026, 5:00 PM". */
+function nowPkt() {
+  return Utilities.formatDate(new Date(), "Asia/Karachi", "d MMM yyyy, h:mm a");
 }
 
 function getSpreadsheet() {
@@ -114,7 +124,7 @@ function setup() {
 function sendAlert(d) {
   const isAppt = d.type === "appointment";
   const to = CONFIG.ALERT_TO || Session.getEffectiveUser().getEmail();
-  const subject = (isAppt ? "📅 New Appointment Request" : "📞 New Call Back Request") +
+  const subject = (isAppt ? "🩺 New Appointment Request" : "📞 New Call Back Request") +
     " — " + d.name + " | " + CONFIG.SITE_NAME;
   MailApp.sendEmail({
     to: to,
@@ -148,13 +158,10 @@ function alertHtml(d) {
   const line = function (label, valueHtml) {
     return '<p style="margin:7px 0;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;"><b>' + esc(label) + ":</b> " + valueHtml + "</p>";
   };
-  const btn = function (href, text, bg) {
-    return '<a href="' + esc(href) + '" style="display:inline-block;margin:6px 8px 0 0;padding:10px 18px;border-radius:6px;background:' + bg + ';color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">' + text + "</a>";
-  };
 
   let body = "";
   body += '<p style="margin:0 0 4px;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;">' +
-    (isAppt ? "📅" : "📞") + " Someone submitted " + (isAppt ? "an <b>appointment request</b>" : "a <b>call back request</b>") +
+    (isAppt ? "🩺" : "📞") + " Someone submitted " + (isAppt ? "an <b>appointment request</b>" : "a <b>call back request</b>") +
     " on the " + esc(CONFIG.SITE_NAME) + " website.</p>";
 
   body += h("Patient Details");
@@ -178,9 +185,6 @@ function alertHtml(d) {
   body += line("Page", esc(d.page));
   body += line("Came From", esc(d.referrer));
   body += line("Link", '<a href="' + esc(d.url) + '" style="color:#1a5fb4;">' + esc(d.url) + "</a>");
-
-  body += '<div style="margin-top:20px;">' + btn("tel:+" + digits, "📞 Call " + esc(d.name.split(" ")[0]), brand) +
-    btn("https://wa.me/" + digits, "💬 WhatsApp", "#25a244") + "</div>";
 
   body += '<hr style="border:0;border-top:1px solid #e3e3e3;margin:24px 0 12px;">' +
     '<p style="margin:0;font-size:12px;line-height:1.5;color:#888;font-family:Arial,Helvetica,sans-serif;">Received: ' + esc(d.submittedAt) + "<br>" +
