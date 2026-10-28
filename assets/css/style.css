@@ -781,3 +781,13 @@ a { color: var(--link); }
 .btn.submit .spin { border-color: rgba(255, 255, 255, 0.35); border-top-color: #fff; }
 .form-card--lg .tab[aria-selected="true"], .form-card--lg .tab[aria-selected="true"]:hover { background: #3A5C66; box-shadow: 0 6px 16px rgba(58, 92, 102, 0.35); }
 .cal-day.sel { background: #3A5C66; }
+
+/* Outline buttons (e.g. "Call 0300-...") turn the dark slate on hover */
+.btn--outline:hover, .btn--light:hover { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: 0 8px 18px rgba(58, 92, 102, 0.28); }
+
+/* ===== Final button rule: every button goes dark slate (#3A5C66) on hover ===== */
+.btn, .btn--gold { background: #8CA9B1; border-color: #8CA9B1; color: #fff; box-shadow: none; }
+.btn:hover, .btn--gold:hover, .btn--outline:hover, .btn--light:hover { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: 0 8px 18px rgba(58, 92, 102, 0.28); }
+.btn--outline, .btn--light { background: transparent; border: 1px solid #8CA9B1; color: #3A5C66; }
+.btn.submit .spin { border-color: rgba(255, 255, 255, 0.4); border-top-color: #fff; }
+.form-card--lg .tab[aria-selected="true"], .form-card--lg .tab[aria-selected="true"]:hover { background: #3A5C66; }
