@@ -4,7 +4,6 @@
 const CLINIC = {
   name: "Homeo Heal",
   whatsapp: "923009813872",            // country code + number, digits only
-  email: "appointments@example.com",
   // 0 = Sunday. Each entry is [start, end) in 24h time, booked in 30-minute slots.
   hours: {
     0: [],
@@ -476,8 +475,6 @@ function enhanceSelect(sel) {
     const text = `${mode === "book" ? "Appointment request" : "Call back request"} for ${CLINIC.name}\n` +
       rows.slice(1).map(([k, v]) => `${k}: ${v}`).join("\n");
     document.getElementById("send-wa").href = `https://wa.me/${CLINIC.whatsapp}?text=${encodeURIComponent(text)}`;
-    document.getElementById("send-mail").href =
-      `mailto:${CLINIC.email}?subject=${encodeURIComponent((mode === "book" ? "Appointment request: " : "Call back request: ") + rows.find((r) => r[0] === "Name")[1])}&body=${encodeURIComponent(text)}`;
 
     form.hidden = true;
     document.querySelector(".tabs").hidden = true;
