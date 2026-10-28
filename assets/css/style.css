@@ -798,3 +798,11 @@ a { color: var(--link); }
 .btn--outline, .btn--light { background: transparent; border: 1px solid #3A5C66; color: #3A5C66; box-shadow: none; }
 .btn--outline:hover, .btn--light:hover { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: 0 8px 18px rgba(58, 92, 102, 0.3); }
 .form-card--lg .tab[aria-selected="true"], .form-card--lg .tab[aria-selected="true"]:hover { background: #3A5C66; }
+
+/* single doctor card */
+.doctor-grid.single { grid-template-columns: minmax(0, 520px); justify-content: center; }
+.doctor--solo { padding: 2.25rem 2rem 2rem; }
+.doctor--solo img { width: 160px; height: 160px; }
+.doctor--solo h3 { font-size: 26px; }
+.doctor--solo .bio { font-size: 15px; font-weight: 500; line-height: 1.7; color: #6B6E98; text-align: left; margin-bottom: 0.9rem; }
+.doctor--solo .ticks { text-align: left; margin: 1rem 0 1.5rem; }
