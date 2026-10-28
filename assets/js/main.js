@@ -3,8 +3,10 @@
 /* ---------- Edit these for your clinic ---------- */
 const CLINIC = {
   name: "Homeo Heal",
-  // Requests are emailed to the clinic through FormSubmit (https://formsubmit.co). The endpoint below
-  // uses FormSubmit's private alias, which forwards to the clinic inbox without exposing the address.
+  // Preferred: the Google Apps Script web app URL (see apps-script/Code.gs). It saves each request to the
+  // Google Sheet (tabs "Appointments" and "Call Backs") and sends the branded email alert.
+  sheetEndpoint: "https://script.google.com/macros/s/AKfycbwxfTLKupC4rNfu2QxrVsYiu1jcIu_S_ijpqTjhLltEIgizHhY_lv4OHsokBmkPPEvA7Q/exec",
+  // Fallback used only while sheetEndpoint is empty: plain email alerts through FormSubmit's private alias.
   notifyEndpoint: "https://formsubmit.co/ajax/92d1ecd063deda6ce57d0b83a5acca9d",
   resetAfterSeconds: 6,
   // 0 = Sunday. Each entry is [start, end) in 24h time, booked in 30-minute slots.
@@ -465,7 +467,43 @@ function enhanceSelect(sel) {
     }
     const msg = document.getElementById("message").value.trim();
     if (msg) rows.push(["Message", msg]);
+
+    const isBook = mode === "book";
+    const rowText = (key) => (rows.find((r) => r[0] === key) || ["", ""])[1];
+    lastData = {
+      type: isBook ? "appointment" : "callback",
+      name: rowText("Name"),
+      phone: rowText("Phone"),
+      visit: isBook ? rowText("Visit") : "",
+      dateText: isBook ? rowText("Date") : "",
+      timeText: isBook ? rowText("Time") : "",
+      forOther: document.getElementById("for-other").checked,
+      message: msg,
+      page: document.title,
+      url: location.origin + location.pathname,
+      referrer: cameFrom(),
+      submittedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short" }),
+      hp: "",
+    };
     return rows;
+  }
+
+  /* Where the visitor arrived from, shown in the alert email and the sheet */
+  function cameFrom() {
+    if (!document.referrer) return "Direct";
+    try {
+      const host = new URL(document.referrer).hostname.replace(/^www\./, "");
+      if (host === location.hostname) return "Homeo Heal website (internal)";
+      if (/(^|\.)google\./.test(host)) return "Google Search";
+      if (/(^|\.)bing\./.test(host)) return "Bing Search";
+      if (/(^|\.)(facebook|fb)\./.test(host)) return "Facebook";
+      if (/instagram\./.test(host)) return "Instagram";
+      if (/(^|\.)(wa\.me|whatsapp\.)/.test(host)) return "WhatsApp";
+      if (/youtube\.|youtu\.be/.test(host)) return "YouTube";
+      return host;
+    } catch (err) {
+      return "Direct";
+    }
   }
 
   function showSummary() {
@@ -530,6 +568,7 @@ function enhanceSelect(sel) {
   const sendError = document.getElementById("send-error");
   const formError = document.getElementById("form-error");
   let lastRows = [];
+  let lastData = {};
   let countdownTimer = null;
 
   function buildPayload() {
@@ -547,6 +586,18 @@ function enhanceSelect(sel) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 15000);
     try {
+      if (CLINIC.sheetEndpoint) {
+        /* Google Apps Script: "text/plain" keeps this a simple request, so the browser sends no CORS preflight */
+        const r = await fetch(CLINIC.sheetEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(lastData),
+          signal: ctrl.signal,
+        });
+        const reply = await r.json().catch(() => ({}));
+        if (!reply.ok) throw new Error(reply.error || "Request failed");
+        return;
+      }
       const res = await fetch(CLINIC.notifyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
