@@ -791,3 +791,10 @@ a { color: var(--link); }
 .btn--outline, .btn--light { background: transparent; border: 1px solid #8CA9B1; color: #3A5C66; }
 .btn.submit .spin { border-color: rgba(255, 255, 255, 0.4); border-top-color: #fff; }
 .form-card--lg .tab[aria-selected="true"], .form-card--lg .tab[aria-selected="true"]:hover { background: #3A5C66; }
+
+/* ===== FINAL button colours: solid buttons stay dark slate; outline buttons fill dark slate on hover ===== */
+.btn, .btn--gold { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: none; }
+.btn:hover, .btn--gold:hover { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: 0 8px 18px rgba(58, 92, 102, 0.3); }
+.btn--outline, .btn--light { background: transparent; border: 1px solid #3A5C66; color: #3A5C66; box-shadow: none; }
+.btn--outline:hover, .btn--light:hover { background: #3A5C66; border-color: #3A5C66; color: #fff; box-shadow: 0 8px 18px rgba(58, 92, 102, 0.3); }
+.form-card--lg .tab[aria-selected="true"], .form-card--lg .tab[aria-selected="true"]:hover { background: #3A5C66; }
