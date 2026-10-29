@@ -853,3 +853,15 @@ a { color: var(--link); }
 @media (max-width: 340px) {
   .avatars img:nth-of-type(n+5) { display: none; }
 }
+
+/* ===== No sticky bottom bar; button pairs stay on one line on phones ===== */
+.mobile-bar { display: none !important; }
+.copyrightDiv .copyright { padding-bottom: 1.25rem; }
+.lb-s { display: none; }
+@media (max-width: 479px) {
+  .lb-l { display: none; }
+  .lb-s { display: inline; }
+  .btn-row.pair { flex-wrap: nowrap; gap: 0.6rem; }
+  .btn-row.pair .btn { flex: 1 1 auto; min-width: 0; padding: 0.95rem 0.7rem; font-size: 15px; white-space: nowrap; }
+  .banner .btn-row.pair .btn, .cta .btn-row.pair .btn { font-size: 15px; }
+}
