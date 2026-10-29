@@ -867,9 +867,9 @@ a { color: var(--link); }
 }
 
 /* ===== Links (anchors): theme slate with a soft underline; navy + stronger underline on hover ===== */
-a { color: #3A5C66; }
-a:visited { color: #3A5C66; }
-a:hover { color: #1C3D5A; }
+/* text links only: buttons (.btn) keep their own colours */
+a:not(.btn), a:not(.btn):visited { color: #3A5C66; }
+a:not(.btn):hover { color: #1C3D5A; }
 main a:not(.btn) {
   color: #3A5C66; text-decoration: underline; text-decoration-color: rgba(140, 169, 177, 0.75);
   text-decoration-thickness: 1px; text-underline-offset: 3px;
