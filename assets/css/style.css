@@ -831,3 +831,25 @@ a { color: var(--link); }
 #success h2 { font-size: 30px; margin-bottom: 0.5rem; }
 .success-count { margin: 1.25rem 0 0; font-size: 14px; font-weight: 500; color: #6B6E98; }
 @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ===== Small phones: header must never be wider than the screen ===== */
+.brand { flex: 0 1 auto; min-width: 0; }
+.header-row { gap: 0.6rem; }
+@media (max-width: 479px) {
+  .header-actions .btn-short { display: none; }      /* the fixed bottom bar already has "Book appointment" */
+  .brand { font-size: 21px; gap: 0.5rem; }
+  .brand-mark { width: 36px; height: 36px; }
+}
+@media (max-width: 389px) {
+  .brand small { display: none; }                    /* tagline would not fit next to the Menu button */
+}
+
+/* very narrow screens (folded foldables, small phones): keep the patient avatar row inside the card */
+@media (max-width: 400px) {
+  .avatars img, .avatars span { width: 40px; height: 40px; margin-left: -10px; border-width: 3px; }
+  .avatars img:first-child { margin-left: 0; }
+  .avatars span { min-width: 40px; padding: 0 0.5rem; font-size: 11px; }
+}
+@media (max-width: 340px) {
+  .avatars img:nth-of-type(n+5) { display: none; }
+}
