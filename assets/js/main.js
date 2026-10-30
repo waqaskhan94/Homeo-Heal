@@ -730,8 +730,10 @@ function enhanceSelect(sel) {
   waBtn.addEventListener("click", function () {
     const url = "https://wa.me/" + CLINIC.whatsapp + "?text=" + encodeURIComponent(MESSAGE);
     sendLead();
-    const w = window.open(url, "_blank", "noopener");
-    if (!w) location.href = url;
+    /* A real link click in a new tab: this page stays where it is. (window.open with "noopener" returns null, so it cannot be used to detect a blocked tab.) */
+    const a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    document.body.appendChild(a); a.click(); a.remove();
     close();
   });
 })();

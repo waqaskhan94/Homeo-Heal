@@ -151,29 +151,58 @@ function sendAlert(d) {
   });
 }
 
-/** Short alert for someone who tapped the floating "Book an Appointment" button and went on to WhatsApp. */
+/** Alert for someone who pressed "Book Now on WhatsApp" in the website popup (same look as the form alerts). */
 function sendLeadAlert(d) {
   const to = CONFIG.ALERT_TO || Session.getEffectiveUser().getEmail();
-  const brand = CONFIG.BRAND_COLOR;
-  const p = function (label, value) {
-    return '<p style="margin:7px 0;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;"><b>' + esc(label) + ":</b> " + value + "</p>";
-  };
-  const html = '<div style="max-width:540px;margin:0;font-family:Arial,Helvetica,sans-serif;">' +
-    '<div style="background:' + brand + ';border-radius:12px 12px 0 0;padding:22px 20px;text-align:center;">' +
-    '<img src="' + esc(CONFIG.LOGO_URL) + '" width="48" height="48" alt="" style="display:block;margin:0 auto 10px;border:0;">' +
-    '<div style="font-size:22px;font-weight:bold;letter-spacing:1px;color:#ffffff;">' + esc(CONFIG.SITE_NAME) + "</div></div>" +
-    '<div style="padding:18px;border:1px solid #e3e3e3;border-top:0;border-radius:0 0 12px 12px;">' +
-    '<p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#222;">💬 Someone tapped <b>Book Now on WhatsApp</b> on the website. They should message you on WhatsApp shortly.</p>' +
-    p("Interested in", esc(d.interest)) + p("Page", esc(d.page)) + p("Came from", esc(d.referrer)) +
-    p("Link", '<a href="' + esc(d.url) + '" style="color:#1a5fb4;">' + esc(d.url) + "</a>") +
-    '<p style="margin:14px 0 0;font-size:12px;color:#888;">Received: ' + esc(d.submittedAt) + "</p></div></div>";
   MailApp.sendEmail({
     to: to,
-    subject: "💬 New WhatsApp Lead — " + d.interest + " | " + CONFIG.SITE_NAME,
-    htmlBody: html,
-    body: "New WhatsApp lead\nInterested in: " + d.interest + "\nPage: " + d.page + "\nCame from: " + d.referrer + "\nLink: " + d.url + "\nReceived: " + d.submittedAt,
+    subject: "💬 New WhatsApp Click (" + d.interest + ") — " + CONFIG.SITE_NAME,
+    htmlBody: leadHtml(d),
+    body: [
+      "New WhatsApp click",
+      "Contact clicked: " + d.interest,
+      "Page: " + d.page,
+      "Came from: " + d.referrer,
+      "Link: " + d.url,
+      "Clicked: " + d.submittedAt,
+      "Note: this only means the visitor opened WhatsApp. The message they send is not captured here.",
+    ].join("\n"),
     name: CONFIG.SITE_NAME + " Website",
   });
+}
+
+function leadHtml(d) {
+  const brand = CONFIG.BRAND_COLOR;
+  const h = function (text) {
+    return '<h3 style="margin:22px 0 8px;font-size:17px;color:' + brand + ';border-bottom:1px solid #e3e3e3;padding-bottom:6px;font-family:Arial,Helvetica,sans-serif;">' + esc(text) + "</h3>";
+  };
+  const line = function (label, valueHtml) {
+    return '<p style="margin:7px 0;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;"><b>' + esc(label) + ":</b> " + valueHtml + "</p>";
+  };
+
+  let body = "";
+  body += '<p style="margin:0 0 4px;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;">💬 Someone clicked <b>Book Now on WhatsApp</b> on the ' +
+    esc(CONFIG.SITE_NAME) + " website.</p>";
+
+  body += h("WhatsApp Contact");
+  body += line("Contact Clicked", esc(d.interest));
+
+  body += h("Where");
+  body += line("Page", esc(d.page));
+  body += line("Came From", esc(d.referrer));
+  body += line("Link", '<a href="' + esc(d.url) + '" style="color:#1a5fb4;">' + esc(d.url) + "</a>");
+
+  body += '<hr style="border:0;border-top:1px solid #e3e3e3;margin:24px 0 12px;">' +
+    '<p style="margin:0;font-size:12px;line-height:1.5;color:#888;font-family:Arial,Helvetica,sans-serif;">Clicked: ' + esc(d.submittedAt) + "<br>" +
+    "Note: this only means the visitor opened WhatsApp. The message they send is not captured here.<br>" +
+    "(This alert was sent automatically from the " + esc(CONFIG.SITE_NAME) + " website.)</p>";
+
+  return '<div style="max-width:540px;margin:0;font-family:Arial,Helvetica,sans-serif;">' +
+    '<div style="background:' + brand + ';border-radius:12px 12px 0 0;padding:26px 20px;text-align:center;">' +
+    '<img src="' + esc(CONFIG.LOGO_URL) + '" width="56" height="56" alt="" style="display:block;margin:0 auto 12px;border:0;">' +
+    '<div style="font-size:24px;font-weight:bold;letter-spacing:1px;color:#ffffff;">' + esc(CONFIG.SITE_NAME) + "</div>" +
+    '<div style="margin-top:6px;font-size:12px;color:#dfecef;">' + esc(CONFIG.TAGLINE) + "</div></div>" +
+    '<div style="padding:18px 18px 8px;border:1px solid #e3e3e3;border-top:0;border-radius:0 0 12px 12px;">' + body + "</div></div>";
 }
 
 function alertText(d) {
