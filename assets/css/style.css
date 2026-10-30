@@ -954,3 +954,6 @@ main .area:hover h3 a { color: #3A5C66; }
 
 /* AVIF <picture> wrappers do not affect layout */
 picture{display:contents}
+
+/* contact page now has three cards */
+@media (min-width: 760px) { .contact-grid { grid-template-columns: repeat(3, 1fr); } }
