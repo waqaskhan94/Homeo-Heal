@@ -74,9 +74,9 @@
       <div>
         <span class="eyebrow">Our approach</span>
         <h2>One person, one plan</h2>
-        <p style="margin-top:1rem">From kidney stones and piles to skin, joint pain, stress and sleep, our doctor helps you understand what may be behind your complaint and choose a remedy that fits you. Every visit starts with a long, unhurried conversation.</p>
+        <p style="margin-top:1rem">From kidney stones and piles to skin, joint pain, stress and sleep, our doctor helps you understand what may be behind your complaint and choose a remedy that fits you. Every visit starts with a focused, unhurried conversation.</p>
         <ul class="ticks">
-          <li>First visit of about an hour</li>
+          <li>First visit of about 20 to 25 minutes</li>
           <li>Remedies explained in plain words</li>
           <li>In-clinic or online consultations</li>
         </ul>
@@ -207,7 +207,7 @@
         <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><strong>Call/Text:</strong> <a href="tel:+923009813872">0300-9813872</a></span></p>
         <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8.5 19L4 20z"/><path d="M9 10c.5 2.5 2.5 4.5 5 5l1.5-1.5-2-1-1 .8c-.8-.4-1.6-1.2-2-2l.8-1-1-2z"/></svg><span><strong>WhatsApp:</strong> <a href="https://wa.me/923009813872" rel="noopener">0300-9813872</a></span></p>
         <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span><strong>Clinic:</strong> Rawalpindi, Punjab, Pakistan</span></p>
-        <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><strong>Clinic Hours:</strong><br>Mon to Fri: 10 AM to 1 PM, 5 PM to 8 PM<br>Sat: 10 AM to 2 PM<br>Sun: closed</span></p>
+        <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><strong>Clinic Hours:</strong><br>Monday to Sunday: 10 AM to 1 PM, 5 PM to 8 PM<br>Friday: closed</span></p>
       </div>
       <div>
         <span class="foot-head">Service Areas</span>
@@ -242,6 +242,25 @@
   <div class="wrap copyright">
     <span>© 2026 Homeo Heal. All rights reserved.</span>
     <span>This site gives general information and does not replace advice from your doctor. In an emergency, contact your nearest emergency service.</span>
+  </div>
+</div>
+
+<!-- Floating booking button and popup -->
+<button class="fab-book" id="fab-book" type="button" aria-haspopup="dialog" aria-controls="bk-modal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8.5 19L4 20z"/><path d="M9 10c.5 2.5 2.5 4.5 5 5l1.5-1.5-2-1-1 .8c-.8-.4-1.6-1.2-2-2l.8-1-1-2z"/></svg><span>Book an Appointment</span></button>
+<div class="bk-modal" id="bk-modal" role="dialog" aria-modal="true" aria-labelledby="bk-title" hidden>
+  <div class="bk-card">
+    <div class="bk-head">
+      <span class="bk-head-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+      <h2 id="bk-title">Book an Appointment</h2>
+      <button class="bk-close" id="bk-close" type="button" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="bk-step bk-detail">
+      <picture><source srcset="assets/images/doctor-wahid.avif" type="image/avif"><img class="bk-photo" src="assets/images/doctor-wahid.jpg" alt="Dr. Wahid-ur-Rehman" width="84" height="84" loading="lazy"></picture>
+      <h3>Dr. Wahid-ur-Rehman, BHMS</h3>
+      <p class="bk-desc">Book an <strong>online video consultation</strong> from anywhere in Pakistan or overseas, or a <strong>clinic appointment</strong> at our Rawalpindi clinic. The first visit takes about 20 to 25 minutes.<br><strong>Clinic Hours:</strong><br>Monday to Sunday: 10 AM to 1 PM and 5 PM to 8 PM<br>Friday: Closed<br><strong>Consultation fee: Rs. 1,000.</strong></p>
+      <button class="bk-wa" id="bk-wa" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8.5 19L4 20z"/><path d="M9 10c.5 2.5 2.5 4.5 5 5l1.5-1.5-2-1-1 .8c-.8-.4-1.6-1.2-2-2l.8-1-1-2z"/></svg><span>Book Now on WhatsApp</span></button>
+    </div>
   </div>
 </div>
 

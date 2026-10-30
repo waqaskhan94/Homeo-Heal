@@ -2,10 +2,10 @@
  * Homeo Heal — website form intake (Google Apps Script)
  *
  * Paste this into Extensions > Apps Script of the Google Sheet that should store the requests.
- * It receives the website's appointment and call-back forms, saves each one to its own tab,
- * and sends a branded email alert to the Google account that owns the script.
+ * It receives the website's appointment and call-back forms and the "Book Now on WhatsApp" leads,
+ * saves each kind to its own tab, and sends an email alert to the Google account that owns the script.
  *
- * Tabs created automatically:  "Appointments"  and  "Call Backs".
+ * Tabs created automatically:  "Appointments", "Call Backs" and "WhatsApp Leads".
  */
 
 const CONFIG = {
@@ -19,11 +19,13 @@ const CONFIG = {
   BRAND_COLOR: "#3A5C66",
   APPOINTMENT_TAB: "Appointments",
   CALLBACK_TAB: "Call Backs",
+  LEAD_TAB: "WhatsApp Leads",
 };
 
 const HEADERS = {
   appointment: ["Received (PKT)", "Name", "Phone", "Visit Type", "Preferred Date", "Preferred Time", "For Child / Family", "Message", "Came From", "Page", "Status"],
   callback: ["Received (PKT)", "Name", "Phone", "For Child / Family", "Message", "Came From", "Page", "Status"],
+  lead: ["Received (PKT)", "Interested In", "Page", "Came From", "Link", "Status"],
 };
 
 /** Website calls this (POST). */
@@ -39,8 +41,12 @@ function doPost(e) {
 
   d = clean(d);
   d.submittedAt = nowPkt();                                               // server time, 12-hour clock
-  if (d.type !== "appointment" && d.type !== "callback") return reply({ ok: false, error: "Unknown form" });
-  if (d.name.length < 2 || d.phone.replace(/\D/g, "").length < 10) return reply({ ok: false, error: "Missing name or phone" });
+  if (d.type !== "appointment" && d.type !== "callback" && d.type !== "lead") return reply({ ok: false, error: "Unknown form" });
+  if (d.type === "lead") {
+    if (d.interest !== "Appointment Request" && d.interest !== "Online Consultation" && d.interest !== "Clinic Appointment") return reply({ ok: false, error: "Unknown lead" });
+  } else if (d.name.length < 2 || d.phone.replace(/\D/g, "").length < 10) {
+    return reply({ ok: false, error: "Missing name or phone" });
+  }
 
   let savedToSheet = false;
   let emailed = false;
@@ -74,6 +80,14 @@ function doGet() {
 /* ---------- Sheet ---------- */
 
 function saveRow(d) {
+  if (d.type === "lead") {
+    const leadSheet = getTab(CONFIG.LEAD_TAB, HEADERS.lead);
+    const leadRow = [d.submittedAt, d.interest, d.page, d.referrer, d.url, "New"];
+    const leadTarget = leadSheet.getRange(leadSheet.getLastRow() + 1, 1, 1, leadRow.length);
+    leadTarget.setNumberFormat("@");
+    leadTarget.setValues([leadRow]);
+    return;
+  }
   const isAppt = d.type === "appointment";
   const sheet = getTab(isAppt ? CONFIG.APPOINTMENT_TAB : CONFIG.CALLBACK_TAB, HEADERS[d.type]);
   const forWho = d.forOther ? "Child / family member" : "Self";
@@ -117,11 +131,13 @@ function getTab(name, headers) {
 function setup() {
   getTab(CONFIG.APPOINTMENT_TAB, HEADERS.appointment);
   getTab(CONFIG.CALLBACK_TAB, HEADERS.callback);
+  getTab(CONFIG.LEAD_TAB, HEADERS.lead);
 }
 
 /* ---------- Email ---------- */
 
 function sendAlert(d) {
+  if (d.type === "lead") { sendLeadAlert(d); return; }
   const isAppt = d.type === "appointment";
   const to = CONFIG.ALERT_TO || Session.getEffectiveUser().getEmail();
   const subject = (isAppt ? "🩺 New Appointment Request" : "📞 New Call Back Request") +
@@ -131,6 +147,31 @@ function sendAlert(d) {
     subject: subject,
     htmlBody: alertHtml(d),
     body: alertText(d),
+    name: CONFIG.SITE_NAME + " Website",
+  });
+}
+
+/** Short alert for someone who tapped the floating "Book an Appointment" button and went on to WhatsApp. */
+function sendLeadAlert(d) {
+  const to = CONFIG.ALERT_TO || Session.getEffectiveUser().getEmail();
+  const brand = CONFIG.BRAND_COLOR;
+  const p = function (label, value) {
+    return '<p style="margin:7px 0;font-size:14px;line-height:1.5;color:#222;font-family:Arial,Helvetica,sans-serif;"><b>' + esc(label) + ":</b> " + value + "</p>";
+  };
+  const html = '<div style="max-width:540px;margin:0;font-family:Arial,Helvetica,sans-serif;">' +
+    '<div style="background:' + brand + ';border-radius:12px 12px 0 0;padding:22px 20px;text-align:center;">' +
+    '<img src="' + esc(CONFIG.LOGO_URL) + '" width="48" height="48" alt="" style="display:block;margin:0 auto 10px;border:0;">' +
+    '<div style="font-size:22px;font-weight:bold;letter-spacing:1px;color:#ffffff;">' + esc(CONFIG.SITE_NAME) + "</div></div>" +
+    '<div style="padding:18px;border:1px solid #e3e3e3;border-top:0;border-radius:0 0 12px 12px;">' +
+    '<p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#222;">💬 Someone tapped <b>Book Now on WhatsApp</b> on the website. They should message you on WhatsApp shortly.</p>' +
+    p("Interested in", esc(d.interest)) + p("Page", esc(d.page)) + p("Came from", esc(d.referrer)) +
+    p("Link", '<a href="' + esc(d.url) + '" style="color:#1a5fb4;">' + esc(d.url) + "</a>") +
+    '<p style="margin:14px 0 0;font-size:12px;color:#888;">Received: ' + esc(d.submittedAt) + "</p></div></div>";
+  MailApp.sendEmail({
+    to: to,
+    subject: "💬 New WhatsApp Lead — " + d.interest + " | " + CONFIG.SITE_NAME,
+    htmlBody: html,
+    body: "New WhatsApp lead\nInterested in: " + d.interest + "\nPage: " + d.page + "\nCame from: " + d.referrer + "\nLink: " + d.url + "\nReceived: " + d.submittedAt,
     name: CONFIG.SITE_NAME + " Website",
   });
 }
@@ -204,6 +245,7 @@ function clean(d) {
   const s = function (v, max) { return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max || 300); };
   return {
     type: s(d.type, 20),
+    interest: s(d.interest, 40),
     name: s(d.name, 120),
     phone: s(d.phone, 40),
     visit: s(d.visit, 80),

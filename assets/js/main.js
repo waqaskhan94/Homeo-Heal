@@ -9,15 +9,16 @@ const CLINIC = {
   // Fallback used only while sheetEndpoint is empty: plain email alerts through FormSubmit's private alias.
   notifyEndpoint: "https://formsubmit.co/ajax/92d1ecd063deda6ce57d0b83a5acca9d",
   resetAfterSeconds: 6,
+  whatsapp: "923009813872",
   // 0 = Sunday. Each entry is [start, end) in 24h time, booked in 30-minute slots.
   hours: {
-    0: [],
+    0: [[10, 13], [17, 20]],
     1: [[10, 13], [17, 20]],
     2: [[10, 13], [17, 20]],
     3: [[10, 13], [17, 20]],
     4: [[10, 13], [17, 20]],
-    5: [[10, 13], [17, 20]],
-    6: [[10, 14]]
+    5: [],
+    6: [[10, 13], [17, 20]]
   },
   bookAheadDays: 60
 };
@@ -665,5 +666,72 @@ function enhanceSelect(sel) {
   window.addEventListener("hashchange", () => {
     if (location.hash === "#callback") setMode("callback", true);
     else if (location.hash === "#book") setMode("book", true);
+  });
+})();
+
+
+/* ---------- Floating "Book an Appointment" popup: one screen, saves the lead, then opens WhatsApp ---------- */
+(function () {
+  const fab = document.getElementById("fab-book");
+  const modal = document.getElementById("bk-modal");
+  if (!fab || !modal) return;
+  const waBtn = document.getElementById("bk-wa");
+  const MESSAGE = "Hello Homeo Heal, I would like to book an appointment with Dr. Wahid-ur-Rehman (online consultation or clinic visit).";
+  const onBookingPage = !!document.getElementById("tab-callback");
+  let lastFocus = null;
+
+  /* The booking page is already the form, so the floating button is not needed there. */
+  if (onBookingPage) fab.classList.add("is-hidden");
+
+  function open() {
+    lastFocus = document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add("bk-open");
+    fab.classList.add("is-hidden");
+    waBtn.focus();
+  }
+  function close() {
+    modal.hidden = true;
+    document.body.classList.remove("bk-open");
+    if (!onBookingPage) fab.classList.remove("is-hidden");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /* Save the lead to the Google Sheet (fire and forget). WhatsApp is opened straight after, in the same click. */
+  function sendLead() {
+    if (!CLINIC.sheetEndpoint) return;
+    let from = "Direct";
+    try { if (document.referrer) from = new URL(document.referrer).hostname.replace(/^www\./, ""); } catch (e) { /* keep Direct */ }
+    const payload = {
+      type: "lead",
+      interest: "Appointment Request",
+      page: document.title,
+      url: location.href,
+      referrer: from,
+      hp: ""
+    };
+    try {
+      fetch(CLINIC.sheetEndpoint, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }).catch(function () {});
+    } catch (e) { /* the WhatsApp chat still opens */ }
+  }
+
+  fab.addEventListener("click", open);
+
+  /* Every WhatsApp button or link on the site opens this popup first. The wa.me link stays in the HTML as a fallback if scripts fail. */
+  document.addEventListener("click", function (e) {
+    const link = e.target.closest && e.target.closest('a[href*="wa.me/"], a[data-wa-popup]');
+    if (!link || modal.contains(link)) return;
+    e.preventDefault();
+    open();
+  });
+  document.getElementById("bk-close").addEventListener("click", close);
+  modal.addEventListener("click", function (e) { if (e.target === modal) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) close(); });
+  waBtn.addEventListener("click", function () {
+    const url = "https://wa.me/" + CLINIC.whatsapp + "?text=" + encodeURIComponent(MESSAGE);
+    sendLead();
+    const w = window.open(url, "_blank", "noopener");
+    if (!w) location.href = url;
+    close();
   });
 })();
