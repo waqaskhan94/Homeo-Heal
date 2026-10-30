@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /apps-script/
+
+Sitemap: https://homeo-heal.pages.dev/sitemap.xml
