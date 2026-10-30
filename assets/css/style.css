@@ -948,3 +948,6 @@ main .area:hover h3 a { color: #3A5C66; }
   .area li:hover, .collage > div:hover, .badge:hover { transform: none; }
   .photo:hover img, .collage > div:hover img, .value:hover svg, .stats li:hover .num { transform: none; }
 }
+
+/* anchored service cards clear the sticky header */
+.card[id]{scroll-margin-top:110px}
