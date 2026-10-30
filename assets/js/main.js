@@ -720,7 +720,7 @@ function enhanceSelect(sel) {
   /* Every WhatsApp button or link on the site opens this popup first. The wa.me link stays in the HTML as a fallback if scripts fail. */
   document.addEventListener("click", function (e) {
     const link = e.target.closest && e.target.closest('a[href*="wa.me/"], a[data-wa-popup]');
-    if (!link || modal.contains(link)) return;
+    if (!link || modal.contains(link) || link.hasAttribute("data-wa-direct")) return;
     e.preventDefault();
     open();
   });
@@ -732,7 +732,7 @@ function enhanceSelect(sel) {
     sendLead();
     /* A real link click in a new tab: this page stays where it is. (window.open with "noopener" returns null, so it cannot be used to detect a blocked tab.) */
     const a = document.createElement("a");
-    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("data-wa-direct", "");
     document.body.appendChild(a); a.click(); a.remove();
     close();
   });
