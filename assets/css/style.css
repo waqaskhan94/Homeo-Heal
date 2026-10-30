@@ -951,3 +951,6 @@ main .area:hover h3 a { color: #3A5C66; }
 
 /* anchored service cards clear the sticky header */
 .card[id]{scroll-margin-top:110px}
+
+/* AVIF <picture> wrappers do not affect layout */
+picture{display:contents}
